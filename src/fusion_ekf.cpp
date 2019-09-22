@@ -1,6 +1,9 @@
-#include "FusionEKF.h"
+#include "fusion_ekf.h"
+
 #include <iostream>
+
 #include "Eigen/Dense"
+
 #include "tools.h"
 
 using Eigen::MatrixXd;

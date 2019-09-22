@@ -1,8 +1,10 @@
-#include <math.h>
-#include <uWS/uWS.h>
 #include <iostream>
+#include <math.h>
+
+#include <uWS/uWS.h>
 #include "json.hpp"
-#include "FusionEKF.h"
+
+#include "fusion_ekf.h"
 #include "tools.h"
 
 using Eigen::MatrixXd;
