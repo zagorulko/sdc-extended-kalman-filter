@@ -38,12 +38,11 @@ int main() {
   FusionEKF fusionEKF;
 
   // used to compute the RMSE later
-  Tools tools;
   vector<VectorXd> estimations;
   vector<VectorXd> ground_truth;
 
-  h.onMessage([&fusionEKF,&tools,&estimations,&ground_truth]
-              (uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, 
+  h.onMessage([&fusionEKF,&estimations,&ground_truth]
+              (uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
                uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
@@ -109,18 +108,18 @@ int main() {
           gt_values(3) = vy_gt;
           ground_truth.push_back(gt_values);
 
-          // Call ProcessMeasurement(meas_package) for Kalman filter
-          fusionEKF.ProcessMeasurement(meas_package);       
+          // Call process_measurement(meas_package) for Kalman filter
+          fusionEKF.process_measurement(meas_package);
 
-          // Push the current estimated x,y positon from the Kalman filter's 
+          // Push the current estimated x,y positon from the Kalman filter's
           //   state vector
 
           VectorXd estimate(4);
 
-          double p_x = fusionEKF.ekf_.x_(0);
-          double p_y = fusionEKF.ekf_.x_(1);
-          double v1  = fusionEKF.ekf_.x_(2);
-          double v2 = fusionEKF.ekf_.x_(3);
+          double p_x = fusionEKF.ekf_.x()[0];
+          double p_y = fusionEKF.ekf_.x()[1];
+          double v1  = fusionEKF.ekf_.x()[2];
+          double v2 = fusionEKF.ekf_.x()[3];
 
           estimate(0) = p_x;
           estimate(1) = p_y;
@@ -129,7 +128,7 @@ int main() {
 
           estimations.push_back(estimate);
 
-          VectorXd RMSE = tools.CalculateRMSE(estimations, ground_truth);
+          VectorXd RMSE = calculate_rmse(estimations, ground_truth);
 
           json msgJson;
           msgJson["estimate_x"] = p_x;

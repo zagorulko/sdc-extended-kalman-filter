@@ -1,30 +1,16 @@
 #pragma once
 
+#include <cmath>
+#include <limits>
 #include <vector>
 
 #include "Eigen/Dense"
 
-class Tools {
- public:
-  /**
-   * Constructor.
-   */
-  Tools();
+inline bool is_nearly_zero(double x) {
+  return std::fabs(x) < 0.0000001;
+}
 
-  /**
-   * Destructor.
-   */
-  virtual ~Tools();
+Eigen::VectorXd calculate_rmse(const std::vector<Eigen::VectorXd>& estimations,
+                               const std::vector<Eigen::VectorXd>& ground_truth);
 
-  /**
-   * A helper method to calculate RMSE.
-   */
-  Eigen::VectorXd CalculateRMSE(const std::vector<Eigen::VectorXd> &estimations, 
-                                const std::vector<Eigen::VectorXd> &ground_truth);
-
-  /**
-   * A helper method to calculate Jacobians.
-   */
-  Eigen::MatrixXd CalculateJacobian(const Eigen::VectorXd& x_state);
-
-};
+Eigen::MatrixXd calculate_jacobian(const Eigen::VectorXd& x_state);

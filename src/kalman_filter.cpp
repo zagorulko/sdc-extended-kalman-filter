@@ -1,41 +1,60 @@
 #include "kalman_filter.h"
 
+#include <cmath>
+#include <iostream>
+
+#include "tools.h"
+
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-/* 
- * Please note that the Eigen library does not initialize 
- *   VectorXd or MatrixXd objects with zeros upon creation.
- */
-
-KalmanFilter::KalmanFilter() {}
-
-KalmanFilter::~KalmanFilter() {}
-
-void KalmanFilter::Init(VectorXd &x_in, MatrixXd &P_in, MatrixXd &F_in,
-                        MatrixXd &H_in, MatrixXd &R_in, MatrixXd &Q_in) {
-  x_ = x_in;
-  P_ = P_in;
-  F_ = F_in;
-  H_ = H_in;
-  R_ = R_in;
-  Q_ = Q_in;
+void KalmanFilter::init(const VectorXd& x, const MatrixXd& P) {
+  x_ = x;
+  P_ = P;
+  I_ = MatrixXd::Identity(x_.size(), x_.size());
 }
 
-void KalmanFilter::Predict() {
-  /**
-   * TODO: predict the state
-   */
+void KalmanFilter::predict(const MatrixXd& F, const MatrixXd& Q) {
+  x_ = F * x_;
+  P_ = F * P_ * F.transpose() + Q;
 }
 
-void KalmanFilter::Update(const VectorXd &z) {
-  /**
-   * TODO: update the state by using Kalman Filter equations
-   */
+void KalmanFilter::update(const VectorXd& z, const MatrixXd& H,
+                          const MatrixXd& R) {
+  update_y(z - (H * x_), H, R);
 }
 
-void KalmanFilter::UpdateEKF(const VectorXd &z) {
-  /**
-   * TODO: update the state by using Extended Kalman Filter equations
-   */
+void KalmanFilter::update_ekf(const VectorXd& z, const MatrixXd& H,
+                              const MatrixXd& R) {
+  double px = x_[0];
+  double py = x_[1];
+  double vx = x_[2];
+  double vy = x_[3];
+
+  // h(x): convert state vector to polar coordinates
+  double rho = std::sqrt(px*px + py*py);
+  if (is_nearly_zero(rho))
+    return;
+  double theta = std::atan2(py, px);
+  double rho_dot = (px*vx + py*vy) / rho;
+
+  VectorXd hx(3);
+  hx << rho, theta, rho_dot;
+
+  VectorXd y = z - hx;
+
+  // Normalize theta of y to [-PI, PI]
+  y[1] = std::atan2(std::sin(y[1]), std::cos(y[1]));
+
+  update_y(y, H, R);
+}
+
+void KalmanFilter::update_y(const Eigen::VectorXd& y, const Eigen::MatrixXd& H,
+                            const Eigen::MatrixXd& R) {
+  MatrixXd Ht = H.transpose();
+  MatrixXd PHt = P_ * Ht;
+  MatrixXd S = H * PHt + R;
+  MatrixXd K = PHt * S.inverse();
+  x_ = x_ + (K * y);
+  P_ = (I_ - K * H) * P_;
 }
