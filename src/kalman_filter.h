@@ -45,7 +45,4 @@ private:
 
   // State covariance matrix
   Eigen::MatrixXd P_;
-
-  // Identity matrix
-  Eigen::MatrixXd I_;
 };

@@ -11,7 +11,6 @@ using Eigen::VectorXd;
 void KalmanFilter::init(const VectorXd& x, const MatrixXd& P) {
   x_ = x;
   P_ = P;
-  I_ = MatrixXd::Identity(x_.size(), x_.size());
 }
 
 void KalmanFilter::predict(const MatrixXd& F, const MatrixXd& Q) {
@@ -56,5 +55,5 @@ void KalmanFilter::update_y(const Eigen::VectorXd& y, const Eigen::MatrixXd& H,
   MatrixXd S = H * PHt + R;
   MatrixXd K = PHt * S.inverse();
   x_ = x_ + (K * y);
-  P_ = (I_ - K * H) * P_;
+  P_ -= K * H * P_;
 }
